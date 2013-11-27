@@ -22,7 +22,3 @@ That's it, you can now checkout your application at:
     http://suitecrm-$yournamespace.rhcloud.com
     
 In the first execution the administrator credentials are admin/admin.
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/latinojoel/suitecrm-openshift-quickstart/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
