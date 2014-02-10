@@ -1,4 +1,3 @@
-
 <?php
 
 $sugar_config_si = array (
@@ -38,4 +37,3 @@ $sugar_config_si = array (
     'setup_site_specify_guid' => '0',
     'setup_site_guid' => 'auto',
     );
-

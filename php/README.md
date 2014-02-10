@@ -1,4 +1,4 @@
-##SuiteCRM 7.0.1
+##SuiteCRM 7.0.2
 
 ### What's in this repository ###
 
@@ -22,6 +22,31 @@ The following links offer various ways to view, contribute and collaborate to th
 [suitecrm_docs]: http://suitecrm.com/index.php/suitecrm-the-sugarcrm-fork
 [suitecrm_partners]: http://suitecrm.com/index.php/suitecrm-partners
 [suitecrm_ext]: http://suitecrm.com/index.php/suitecrm-extensions
+
+### Development Roadmap ###
+
+#### Advanced OpenWorkflow ####
++ Work with related modules(SalesAgility) 
++ New modified only(SalesAgility) 
++ Approvals(Unassigned)*
++ Field change triggers(Unassigned)*
+
+#### Advanced OpenReports ####
++ Charts(SalesAgility) 
++ Dashlet Integration(SalesAgility) 
++ Related modules(Unassigned)*
+
+#### Advanced OpenPortal ####
++ Quotes(Assigned) 
++ Events(SalesAgility) 
++ E-Commerce integration(Unassigned)*
++ Integration with WordPress & Drupal(Unassigned)*
+
+#### Advanced OpenDiscovery ####
++ Zend only(SalesAgility) 
++ Solr integration(Unassigned)*
+
+(*) Unassigned - Available for collaborators to be assigned to this requirement and develop it for future releases.
 
 ### Support & Licensing ###
 
