@@ -36,4 +36,5 @@ $sugar_config_si = array (
     'setup_site_sugarbeet_automatic_checks' => '1',
     'setup_site_specify_guid' => '0',
     'setup_site_guid' => 'auto',
+    'installer_locked' => false,
     );
