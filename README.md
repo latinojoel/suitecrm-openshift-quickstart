@@ -22,7 +22,7 @@ Create an account at http://openshift.redhat.com/ and install the client tools (
 
 Create a php-5.3 application (you can call your application whatever you want)
 
-    rhc app create suitecrm php-5.4 mysql-5.5 --from-code=https://github.com/latinojoel/suitecrm-openshift-quickstart/
+    rhc app create suitecrm php-5.3 mysql-5.1 --from-code=https://github.com/latinojoel/suitecrm-openshift-quickstart/
 
 That's it, you can now checkout your application at:
 
