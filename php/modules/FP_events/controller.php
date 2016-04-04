@@ -249,7 +249,7 @@ class FP_eventsController extends SugarController
 
         }
         //Target lists. Can incliude contacts, leads and targets as part of the target list
-        if($type = 'target_list'){
+        if($type == 'target_list'){
 
             foreach($ids as $list){
 
@@ -298,7 +298,7 @@ class FP_eventsController extends SugarController
             }   
         }
         //Targets
-        if($type = 'targets'){
+        elseif($type == 'targets'){
 
             foreach($ids as $target){
                 
@@ -315,7 +315,7 @@ class FP_eventsController extends SugarController
             }
         }
         //leads
-        if($type = 'leads'){
+        elseif($type == 'leads'){
             
             foreach($ids as $lead){
 
@@ -332,7 +332,7 @@ class FP_eventsController extends SugarController
             }
         }
         //contacts
-        if($type = 'contacts'){
+        elseif($type == 'contacts'){
 
             foreach($ids as $contact){
                 
@@ -405,6 +405,14 @@ class FP_eventsController extends SugarController
                 $emailTemp = new EmailTemplate();
                 $emailTemp->disable_row_level_security = true;
                 $emailTemp->retrieve($event->invite_templates);  //Use the ID value of the email template record
+
+                //check email template is set, if not return error
+                if($emailTemp->id == '')
+                {
+                    SugarApplication::appendErrorMessage($mod_strings['LBL_ERROR_MSG_5']);
+                    SugarApplication::redirect("index.php?module=FP_events&return_module=FP_events&action=DetailView&record=".$event->id);
+                    die();
+                }
 
                 //parse the lead varibales first
                 $firstpass = $emailTemp->parse_template_bean($emailTemp->body_html, 'Contacts', $contact);
@@ -610,7 +618,7 @@ class FP_eventsController extends SugarController
         //now create email
         if (@$mail->Send()) {
             $emailObj->to_addrs= '';
-            $emailObj->type= 'archived';
+            $emailObj->type= 'out';
             $emailObj->deleted = '0';
             $emailObj->name = $mail->Subject;
             $emailObj->description = $mail->AltBody;

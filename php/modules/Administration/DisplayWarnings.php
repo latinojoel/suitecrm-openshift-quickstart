@@ -3,36 +3,39 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
 /*********************************************************************************
  * SugarCRM Community Edition is a customer relationship management program developed by
  * SugarCRM, Inc. Copyright (C) 2004-2013 SugarCRM Inc.
- * 
+ *
+ * SuiteCRM is an extension to SugarCRM Community Edition developed by Salesagility Ltd.
+ * Copyright (C) 2011 - 2016 Salesagility Ltd.
+ *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License version 3 as published by the
  * Free Software Foundation with the addition of the following permission added
  * to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
  * IN WHICH THE COPYRIGHT IS OWNED BY SUGARCRM, SUGARCRM DISCLAIMS THE WARRANTY
  * OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License along with
  * this program; if not, see http://www.gnu.org/licenses or write to the Free
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA.
- * 
+ *
  * You can contact SugarCRM, Inc. headquarters at 10050 North Wolfe Road,
  * SW2-130, Cupertino, CA 95014, USA. or at email address contact@sugarcrm.com.
- * 
+ *
  * The interactive user interfaces in modified source and object code versions
  * of this program must display Appropriate Legal Notices, as required under
  * Section 5 of the GNU Affero General Public License version 3.
- * 
+ *
  * In accordance with Section 7(b) of the GNU Affero General Public License version 3,
  * these Appropriate Legal Notices must retain the display of the "Powered by
- * SugarCRM" logo. If the display of the logo is not reasonably feasible for
- * technical reasons, the Appropriate Legal Notices must display the words
- * "Powered by SugarCRM".
+ * SugarCRM" logo and "Supercharged by SuiteCRM" logo. If the display of the logos is not
+ * reasonably feasible for  technical reasons, the Appropriate Legal Notices must
+ * display the words  "Powered by SugarCRM" and "Supercharged by SuiteCRM".
  ********************************************************************************/
 
 
@@ -58,20 +61,6 @@ if(isset($_SESSION['rebuild_extensions'])){
 	displayAdminError(translate('MSG_REBUILD_EXTENSIONS', 'Administration'));
 }
 
-if (empty($license)){
-	$license=new Administration();
-	$license=$license->retrieveSettings('license');
-}
-
-
-
-if(!empty($_SESSION['HomeOnly'])){
-	displayAdminError(translate('FATAL_LICENSE_ALTERED', 'Administration'));
-}
-
-if(isset($license) && !empty($license->settings['license_msg_all'])){
-	displayAdminError(base64_decode($license->settings['license_msg_all']));
-}
 if ( (strpos($_SERVER["SERVER_SOFTWARE"],'Microsoft-IIS') !== false) && (php_sapi_name() == 'cgi-fcgi') && (ini_get('fastcgi.logging') != '0') ) {
     displayAdminError(translate('LBL_FASTCGI_LOGGING', 'Administration'));
 }
@@ -132,18 +121,6 @@ if($smtp_error) {
 			}
         }
 
-//		if (!isset($_SESSION['dst_fixed']) || $_SESSION['dst_fixed'] != true) {
-//			$qDst = "SELECT count(*) AS dst FROM versions WHERE name = 'DST Fix'";
-//			$rDst = $db->query($qDst);
-//			$rowsDst = $db->fetchByAssoc($rDst);
-//			if($rowsDst['dst'] > 0) {
-//				$_SESSION['dst_fixed'] = true;
-//			} else {
-//				$_SESSION['dst_fixed'] = false;
-//				displayAdminError($app_strings['LBL_DST_NEEDS_FIXIN']);
-//			}
-//
-//		}
 
 		if(isset($_SESSION['administrator_error']))
 		{

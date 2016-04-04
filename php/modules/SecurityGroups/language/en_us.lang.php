@@ -76,16 +76,18 @@ $mod_strings = array (
   'LBL_MAKE_POST' => 'Make a Post',
   'LBL_POST' => 'Post',
   'LBL_SELECT_GROUP' => 'Select a Group',
+  'LBL_SELECT_GROUP_ERROR' => 'Please select a group and try again.',
   
   'LBL_HOOKUP_SELECT' => "Select a module",
   'LBL_HOOKUP_CONFIRM_PART1' => "You are about to add a relationship between Security Groups and ",
   'LBL_HOOKUP_CONFIRM_PART2' => ". Continue?",
   
   'LBL_GROUP_SELECT' => 'Select which groups should have access to this record',
-  'LBL_ERROR_DUPLICATE' => 'Due to a possible duplicate detected by Sugar you will have to manually add Security Groups to your newly created record.',
+  'LBL_ERROR_DUPLICATE' => 'Due to a possible duplicate detected by SuiteCRM you will have to manually add Security Groups to your newly created record.',
 
   'LBL_INBOUND_EMAIL' => 'Inbound email account',
   'LBL_INBOUND_EMAIL_DESC' => 'Only allow access to an email account if user belongs to a group that is assigned to the mail account.',
   'LBL_PRIMARY_GROUP' => 'Primary Group',
+
 );
 ?>

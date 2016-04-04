@@ -42,7 +42,7 @@ function popup_select(&$bean, $event, $arguments)
 
 	else if(isset($sugar_config['securitysuite_user_popup']) && $sugar_config['securitysuite_user_popup'] == true
 		&& empty($bean->fetched_row['id']) && $bean->module_dir == "Users"
-		&& $_REQUEST['action'] != 'SaveSignature' ) { //Bug: 589
+		&& isset($_REQUEST['action']) && $_REQUEST['action'] != 'SaveSignature' ) { //Bug: 589
 
 		//$_REQUEST['return_module'] = $bean->module_dir;
 		//$_REQUEST['return_action'] = "DetailView";
@@ -169,7 +169,7 @@ function send_massassign(mode, no_record_txt, start_string, end_string, del) {
 		return false;
 
 	if(document.MassAssign_SecurityGroups.massassign_group.selectedIndex == 0) {
-		alert("Please select a group and try again.");
+		alert("${current_module_strings['LBL_SELECT_GROUP_ERROR']}");
 		return false;	
 	}
 	 

@@ -35,35 +35,38 @@
  ********************************************************************************/
 
 *}
-<!--end body panes-->
+
         </td></tr></table>
     </div>
-    <div class="clear"></div>
 
-</div>
+
+</main>
 
 <div id="bottomLinks">
 </div>
 
-<div id="footer">
+<footer>
+    <div id="responseTime">
+        {$STATISTICS}
+    </div>
     {if $AUTHENTICATED}
+    <div class="companyLogo"><a href="index.php?module=Home&action=index" border="0"><img src="{$COMPANY_LOGO_URL}" width="{$COMPANY_LOGO_WIDTH}" height="{$COMPANY_LOGO_HEIGHT}" alt="{sugar_translate label='LBL_COMPANY_LOGO'}" border="0"/></a></div>
     <div id="links">
         <button id="print_page" onclick="printpage()">{$MOD.LBL_SUITE_PRINT}</button>
         <button id="backtotop">{$MOD.LBL_SUITE_TOP}</button>
     </div>
     {/if}
-	<div id="responseTime">
-    	{$STATISTICS}
-    </div>
+
     <div id="copyright_data">
-    <div id="dialog2" title="{$MOD.LBL_SUITE_SUPERCHARGED}">
+    <div id="dialogSuite" title="{$MOD.LBL_SUITE_SUPERCHARGED}">
         <p>{$MOD.LBL_SUITE_DESC1}</p>
         <br>
         <p>{$MOD.LBL_SUITE_DESC2}</p>
         <br>
         <p>{$MOD.LBL_SUITE_DESC3}</p>
+        <br>
     </div>
-    <div id="dialog" title="&copy; {$MOD.LBL_SUITE_POWERED_BY}">
+    <div id="dialogSugar" title="&copy; {$MOD.LBL_SUITE_POWERED_BY}">
         <p>{$COPYRIGHT}</p>
     </div>
 
@@ -71,15 +74,12 @@
     <button id="powered_by">&copy; {$MOD.LBL_SUITE_POWERED_BY}</button>
     </div>
 
-</div>
+</footer>
 <script>
 {literal}
 function printpage()
 {
     window.print();
-}
-if(SUGAR.util.isTouchScreen()) {
-        setTimeout(resizeHeader,10000);
 }
 
 //qe_init function sets listeners to click event on elements of 'quickEdit' class
@@ -138,7 +138,7 @@ function qe_init(){
         });
 
         $(function() {
-            $( "#dialog, #dialog2" ).dialog({
+            $( "#dialogSugar, #dialogSuite" ).dialog({
                 autoOpen: false,
                 show: {
                     effect: "blind",
@@ -150,11 +150,11 @@ function qe_init(){
                 }
             });
             $( "#powered_by" ).click(function() {
-                $( "#dialog" ).dialog( "open" );
+                $( "#dialogSugar" ).dialog( "open" );
                 $("#overlay").show().css({"opacity": "0.5"});
             });
             $( "#admin_options" ).click(function() {
-                $( "#dialog2" ).dialog( "open" );
+                $( "#dialogSuite" ).dialog( "open" );
             });
         });
 
@@ -168,20 +168,17 @@ function qe_init(){
             $('html, body').animate({scrollTop:0}, 500); // Scroll speed to the top
         });
     </script>
-    <script type="text/javascript">
-    
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', 'UA-38184880-12']);
-      _gaq.push(['_setDomainName', 'rhcloud.com']);
-      _gaq.push(['_setAllowLinker', true]);
-      _gaq.push(['_trackPageview']);
-    
-      (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
-    
+    <script>
+        function toggleCodes(on) {
+            var obj = document.getElementById('icons');
+
+            if (on) {
+                obj.className += ' codesOn';
+            } else {
+                obj.className = obj.className.replace(' codesOn', '');
+            }
+        }
+
     </script>
 {/literal}
 </body>

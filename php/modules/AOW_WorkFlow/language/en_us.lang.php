@@ -54,12 +54,11 @@ $mod_strings = array (
   'LBL_NEW_FORM_TITLE' => 'New WorkFlow',
   'LBL_FLOW_MODULE' => 'WorkFlow Module',
   'LBL_STATUS' => 'Status',
-  'LBL_RUN_WHEN' => 'Run When',
-  'LNK_IMPORT_AOW_WORKFLOW' => 'Import WorkFlow',
-  'LBL_AOW_WORKFLOW_SUBPANEL_TITLE' => 'WorkFlow',
+  'LBL_FLOW_RUN_ON' => 'Run On',
   'LBL_CONDITION_LINES' => 'Conditions',
   'LBL_ADD_CONDITION' => 'Add Condition',
   'LBL_ACTION_LINES' => 'Actions',
   'LBL_ADD_ACTION' => 'Add Action',
   'LBL_MULTIPLE_RUNS' => 'Repeated Runs',
+  'LBL_RUN_WHEN' => 'Run'
 );

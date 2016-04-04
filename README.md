@@ -1,4 +1,4 @@
-![SuiteCRM logo](http://suitecrm.com/templates/jsn_air_pro/images/colors/red/logo.png) SuiteCRM on OpenShift
+![SuiteCRM logo](https://suitecrm.com/images/suite_icon.png) SuiteCRM on OpenShift
 ======================
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/latinojoel/suitecrm-openshift-quickstart/trend.png)](https://bitdeli.com/free "Bitdeli Badge")

@@ -1,7 +1,8 @@
 <?php
 /**
- * Advanced OpenReports, SugarCRM Reporting.
- * @package Advanced OpenReports for SugarCRM
+ *
+ *
+ * @package
  * @copyright SalesAgility Ltd http://www.salesagility.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,589 +20,243 @@
  * or write to the Free Software Foundation,Inc., 51 Franklin Street,
  * Fifth Floor, Boston, MA 02110-1301  USA
  *
- * @author SalesAgility <info@salesagility.com>
+ * @author Salesagility Ltd <support@salesagility.com>
  */
 
-function getModuleFields($module, $view='EditView',$value = '')
+/**
+ * Returns the display labels for a module path and field.
+ * @param $modulePath
+ * @param $field
+ * @return array
+ */
+function getDisplayForField($modulePath, $field, $reportModule)
 {
-    global $app_strings, $beanList;
-
-    $fields = array(''=>$app_strings['LBL_NONE']);
-
-    if ($module != '') {
-        if(isset($beanList[$module]) && $beanList[$module]){
-            $mod = new $beanList[$module]();
-            foreach($mod->field_defs as $name => $arr){
-                if((isset($arr['type']) && $arr['type'] != 'link') &&((!isset($arr['source']) || $arr['source'] != 'non-db') || ($arr['type'] == 'relate' && isset($arr['id_name'])))){
-                    if(isset($arr['vname']) && $arr['vname'] != ''){
-                        $fields[$name] = rtrim(translate($arr['vname'],$mod->module_dir), ':');
-                    } else {
-                        $fields[$name] = $name;
-                    }
-                    /*if($arr['type'] == 'relate' && isset($arr['id_name']) && $arr['id_name'] != ''){
-                        if(isset($fields[$arr['id_name']])) unset( $fields[$arr['id_name']]);
-                    }*/
-                }
-            } //End loop.
-
-        }
-    }
-    if($view == 'JSON'){
-        return json_encode($fields);
-    }
-    else if($view == 'EditView'){
-        return get_select_options_with_id($fields, $value);
-    } else {
-        return $fields[$value];
-    }
-}
-
-function getRelModuleFields($module, $rel_field, $view='EditView',$value = ''){
-    global $beanList;
-
-    if($module == $rel_field){
-        return getModuleFields($module, $view, $value);
-    }
-
-    $mod = new $beanList[$module]();
-    $data = $mod->field_defs[$rel_field];
-
-    if(isset($data['module']) && $data['module'] != ''){
-        return getModuleFields($data['module'], $view, $value);
-    }
-
-}
-
-function getRelatedModule($module, $rel_field){
-    global $beanList;
-
-    if($module == $rel_field){
-        return $module;
-    }
-
-    $mod = new $beanList[$module]();
-
-    if(isset($arr['module']) && $arr['module'] != '') {
-        return $arr['module'];
-    } else if($mod->load_relationship($rel_field)){
-        return $mod->$rel_field->getRelatedModuleName();
-    }
-
-    return $module;
-
-}
-
-
-function getModuleRelationships($module, $view='EditView',$value = '')
-{
-    global $beanList, $app_list_strings;
-
-    $fields = array($module=>$app_list_strings['moduleList'][$module]);
-    $sort_fields = array();
-    $invalid_modules = array();
-
-    if ($module != '') {
-        if(isset($beanList[$module]) && $beanList[$module]){
-            $mod = new $beanList[$module]();
-
-            /*if($mod->is_AuditEnabled()){
-                $fields['Audit'] = translate('LBL_AUDIT_TABLE','AOR_Fields');
-            }*/
-            foreach($mod->get_linked_fields() as $name => $arr){
-                if(isset($arr['module']) && $arr['module'] != '') {
-                    $rel_module = $arr['module'];
-                } else if($mod->load_relationship($name)){
-                    $rel_module = $mod->$name->getRelatedModuleName();
-                }
-                if(!in_array($rel_module,$invalid_modules)){
-                    if(isset($arr['vname']) && $arr['vname'] != ''){
-                        $sort_fields[$name] = $app_list_strings['moduleList'][$rel_module].' : '.translate($arr['vname'],$mod->module_dir);
-                    } else {
-                        $sort_fields[$name] = $app_list_strings['moduleList'][$rel_module].' : '. $name;
-                    }
-                    if($arr['type'] == 'relate' && isset($arr['id_name']) && $arr['id_name'] != ''){
-                        if(isset($fields[$arr['id_name']])) unset( $fields[$arr['id_name']]);
-                    }
-                }
-            } //End loop.
-            array_multisort($sort_fields, SORT_ASC, $sort_fields);
-            $fields = array_merge((array)$fields, (array)$sort_fields);
-        }
-    }
-    if($view == 'EditView'){
-        return get_select_options_with_id($fields, $value);
-    } else {
-        return $fields[$value];
-    }
-}
-
-
-function getModuleField($module, $fieldname, $aor_field, $view='EditView',$value = '', $alt_type = ''){
-    global $current_language, $app_strings, $app_list_strings, $current_user, $beanFiles, $beanList;
-
-    // use the mod_strings for this module
-    $mod_strings = return_module_language($current_language,$module);
-
-    // set the filename for this control
-    $file = create_cache_directory('modules/AOR_Reports/') . $module . $view . $alt_type . $fieldname . '.tpl';
-
-    if ( !is_file($file)
-        || inDeveloperMode()
-        || !empty($_SESSION['developerMode']) ) {
-
-        if ( !isset($vardef) ) {
-            require_once($beanFiles[$beanList[$module]]);
-            $focus = new $beanList[$module];
-            $vardef = $focus->getFieldDefinition($fieldname);
-        }
-
-        $displayParams = array();
-        //$displayParams['formName'] = 'EditView';
-
-        // if this is the id relation field, then don't have a pop-up selector.
-        if( $vardef['type'] == 'relate' && $vardef['id_name'] == $vardef['name']) {
-            $vardef['type'] = 'varchar';
-        }
-
-        if(isset($vardef['precision'])) unset($vardef['precision']);
-
-        //$vardef['precision'] = $locale->getPrecedentPreference('default_currency_significant_digits', $current_user);
-
-        //TODO Fix datetimecomebo
-        //temp work around
-        if( $vardef['type'] == 'datetimecombo') {
-            $vardef['type'] = 'datetime';
-        }
-
-        // trim down textbox display
-        if( $vardef['type'] == 'text' ) {
-            $vardef['rows'] = 2;
-            $vardef['cols'] = 32;
-        }
-
-        // create the dropdowns for the parent type fields
-        if ( $vardef['type'] == 'parent_type' ) {
-            $vardef['type'] = 'enum';
-        }
-
-        if($vardef['type'] == 'link'){
-            $vardef['type'] = 'relate';
-            $vardef['rname'] = 'name';
-            $vardef['id_name'] = $vardef['name'].'_id';
-        }
-
-        //check for $alt_type
-        if ( $alt_type != '' ) {
-            $vardef['type'] = $alt_type;
-        }
-
-        // remove the special text entry field function 'getEmailAddressWidget'
-        if ( isset($vardef['function'])
-            && ( $vardef['function'] == 'getEmailAddressWidget'
-                || $vardef['function']['name'] == 'getEmailAddressWidget' ) )
-            unset($vardef['function']);
-
-        if(isset($vardef['name']) && ($vardef['name'] == 'date_entered' || $vardef['name'] == 'date_modified')){
-            $vardef['name'] = 'aor_temp_date';
-        }
-
-        // load SugarFieldHandler to render the field tpl file
-        static $sfh;
-
-        if(!isset($sfh)) {
-            require_once('include/SugarFields/SugarFieldHandler.php');
-            $sfh = new SugarFieldHandler();
-        }
-
-        $contents = $sfh->displaySmarty('fields', $vardef, $view, $displayParams);
-
-        // Remove all the copyright comments
-        $contents = preg_replace('/\{\*[^\}]*?\*\}/', '', $contents);
-
-        if( $view == 'EditView' &&  ($vardef['type'] == 'relate' || $vardef['type'] == 'parent')){
-            $contents = str_replace('"'.$vardef['id_name'].'"','{/literal}"{$fields.'.$vardef['name'].'.id_name}"{literal}', $contents);
-            $contents = str_replace('"'.$vardef['name'].'"','{/literal}"{$fields.'.$vardef['name'].'.name}"{literal}', $contents);
-        }
-
-        // hack to disable one of the js calls in this control
-        if ( isset($vardef['function']) && ( $vardef['function'] == 'getCurrencyDropDown' || $vardef['function']['name'] == 'getCurrencyDropDown' ) )
-            $contents .= "{literal}<script>function CurrencyConvertAll() { return; }</script>{/literal}";
-
-        // Save it to the cache file
-        if($fh = @sugar_fopen($file, 'w')) {
-            fputs($fh, $contents);
-            fclose($fh);
-        }
-    }
-
-    // Now render the template we received
-    $ss = new Sugar_Smarty();
-
-    // Create Smarty variables for the Calendar picker widget
-    global $timedate;
-    $time_format = $timedate->get_user_time_format();
-    $date_format = $timedate->get_cal_date_format();
-    $ss->assign('USER_DATEFORMAT', $timedate->get_user_date_format());
-    $ss->assign('TIME_FORMAT', $time_format);
-    $time_separator = ":";
-    $match = array();
-    if(preg_match('/\d+([^\d])\d+([^\d]*)/s', $time_format, $match)) {
-        $time_separator = $match[1];
-    }
-    $t23 = strpos($time_format, '23') !== false ? '%H' : '%I';
-    if(!isset($match[2]) || $match[2] == '') {
-        $ss->assign('CALENDAR_FORMAT', $date_format . ' ' . $t23 . $time_separator . "%M");
-    }
-    else {
-        $pm = $match[2] == "pm" ? "%P" : "%p";
-        $ss->assign('CALENDAR_FORMAT', $date_format . ' ' . $t23 . $time_separator . "%M" . $pm);
-    }
-
-    $ss->assign('CALENDAR_FDOW', $current_user->get_first_day_of_week());
-
-    // populate the fieldlist from the vardefs
-    $fieldlist = array();
-    if ( !isset($focus) || !($focus instanceof SugarBean) )
-        require_once($beanFiles[$beanList[$module]]);
-    $focus = new $beanList[$module];
-    // create the dropdowns for the parent type fields
-    $vardefFields = $focus->getFieldDefinitions();
-    if ( $vardefFields[$fieldname]['type'] == 'parent_type' ) {
-        $focus->field_defs[$fieldname]['options'] = $focus->field_defs[$vardefFields[$fieldname]['group']]['options'];
-    }
-    foreach ( $vardefFields as $name => $properties ) {
-        $fieldlist[$name] = $properties;
-        // fill in enums
-        if(isset($fieldlist[$name]['options']) && is_string($fieldlist[$name]['options']) && isset($app_list_strings[$fieldlist[$name]['options']]))
-            $fieldlist[$name]['options'] = $app_list_strings[$fieldlist[$name]['options']];
-        // Bug 32626: fall back on checking the mod_strings if not in the app_list_strings
-        elseif(isset($fieldlist[$name]['options']) && is_string($fieldlist[$name]['options']) && isset($mod_strings[$fieldlist[$name]['options']]))
-            $fieldlist[$name]['options'] = $mod_strings[$fieldlist[$name]['options']];
-        // Bug 22730: make sure all enums have the ability to select blank as the default value.
-        if(!isset($fieldlist[$name]['options']['']))
-            $fieldlist[$name]['options'][''] = '';
-    }
-
-    // fill in function return values
-    if ( !in_array($fieldname,array('email1','email2')) )
-    {
-        if (!empty($fieldlist[$fieldname]['function']['returns']) && $fieldlist[$fieldname]['function']['returns'] == 'html')
-        {
-            $function = $fieldlist[$fieldname]['function']['name'];
-            // include various functions required in the various vardefs
-            if ( isset($fieldlist[$fieldname]['function']['include']) && is_file($fieldlist[$fieldname]['function']['include']))
-                require_once($fieldlist[$fieldname]['function']['include']);
-            $_REQUEST[$fieldname] = $value;
-            $value = $function($focus, $fieldname, $value, $view);
-
-            $value = str_ireplace($fieldname, $aor_field, $value);
-        }
-    }
-
-    if($fieldlist[$fieldname]['type'] == 'link'){
-        $fieldlist[$fieldname]['id_name'] = $fieldlist[$fieldname]['name'].'_id';
-    }
-
-    if(isset($fieldlist[$fieldname]['name']) && ($fieldlist[$fieldname]['name'] == 'date_entered' || $fieldlist[$fieldname]['name'] == 'date_modified')){
-        $fieldlist[$fieldname]['name'] = 'aor_temp_date';
-        $fieldlist['aor_temp_date'] = $fieldlist[$fieldname];
-        $fieldname = 'aor_temp_date';
-    }
-
-
-    if(isset( $fieldlist[$fieldname]['id_name'] ) && $fieldlist[$fieldname]['id_name'] != '' && $fieldlist[$fieldname]['id_name'] != $fieldlist[$fieldname]['name']){
-        $rel_value = $value;
-
-        if(isset($fieldlist[$fieldname]['module']) && $fieldlist[$fieldname]['module'] == 'Users'){
-            $rel_value = get_assigned_user_name($value);
-        } else if(isset($fieldlist[$fieldname]['module'])){
-            require_once($beanFiles[$beanList[$fieldlist[$fieldname]['module']]]);
-            $rel_focus = new $beanList[$fieldlist[$fieldname]['module']];
-            $rel_focus->retrieve($value);
-            if(isset($fieldlist[$fieldname]['rname']) && $fieldlist[$fieldname]['rname'] != ''){
-                $rel_value = $rel_focus->$fieldlist[$fieldname]['rname'];
-            } else {
-                $rel_value = $rel_focus->name;
-            }
-        }
-
-        $fieldlist[$fieldlist[$fieldname]['id_name']]['value'] = $value;
-        $fieldlist[$fieldname]['value'] = $rel_value;
-        $fieldlist[$fieldname]['id_name'] = $aor_field;
-        $fieldlist[$fieldlist[$fieldname]['id_name']]['name'] = $aor_field;
-        $fieldlist[$fieldname]['name'] = $aor_field.'_display';
-    } else if(isset( $fieldlist[$fieldname]['type'] ) && $view == 'DetailView' && ($fieldlist[$fieldname]['type'] == 'datetimecombo' || $fieldlist[$fieldname]['type'] == 'datetime')){
-        $fieldlist[$fieldname]['value'] = $timedate->to_display_date_time($value, true, true);
-        $fieldlist[$fieldname]['name'] = $aor_field;
-    } else if(isset( $fieldlist[$fieldname]['type'] ) && ($fieldlist[$fieldname]['type'] == 'datetimecombo' || $fieldlist[$fieldname]['type'] == 'datetime' || $fieldlist[$fieldname]['type'] == 'date')){
-        $fieldlist[$fieldname]['value'] = $timedate->to_display_date($value);
-        //$fieldlist[$fieldname]['value'] = $timedate->to_display_date_time($value, true, true);
-        //$fieldlist[$fieldname]['value'] = $value;
-        $fieldlist[$fieldname]['name'] = $aor_field;
-    } else {
-        $fieldlist[$fieldname]['value'] = $value;
-        $fieldlist[$fieldname]['name'] = $aor_field;
-
-    }
-
-    $ss->assign("fields",$fieldlist);
-    $ss->assign("form_name",$view);
-    $ss->assign("bean",$focus);
-
-    // add in any additional strings
-    $ss->assign("MOD", $mod_strings);
-    $ss->assign("APP", $app_strings);
-
-    //$return = str_replace($fieldname,$ss->fetch($file));
-
-    return $ss->fetch($file);
-}
-
-
-
-function getDateField($module, $aor_field, $view='EditView', $value, $field_option = true){
     global $app_list_strings;
-
-    $value = json_decode(html_entity_decode_utf8($value), true);
-
-    if(!file_exists('modules/AOBH_BusinessHours/AOBH_BusinessHours.php')) unset($app_list_strings['aor_date_type_list']['business_hours']);
-
-    $field = '';
-
-    if($view == 'EditView'){
-        $field .= "<select type='text' name='$aor_field".'[0]'."' id='$aor_field".'[0]'."' title='' tabindex='116'>". getDateFields($module, $view, $value[0], $field_option) ."</select>&nbsp;&nbsp;";
-        $field .= "<select type='text' name='$aor_field".'[1]'."' id='$aor_field".'[1]'."' onchange='date_field_change(\"$aor_field\")'  title='' tabindex='116'>". get_select_options_with_id($app_list_strings['aor_date_operator'], $value[1]) ."</select>&nbsp;";
-        $display = 'none';
-        if($value[1] == 'plus' || $value[1] == 'minus') $display = '';
-        $field .= "<input  type='text' style='width:40px; display:$display' name='$aor_field".'[2]'."' id='$aor_field".'[2]'."' title='' value='$value[2]' tabindex='116'>&nbsp;";
-        $field .= "<select type='text' style='display:$display' name='$aor_field".'[3]'."' id='$aor_field".'[3]'."' title='' tabindex='116'>". get_select_options_with_id($app_list_strings['aor_date_type_list'], $value[3]) ."</select>";
-    }
-    else {
-        $field = getDateFields($module, $view, $value[0], $field_option).' '.$app_list_strings['aor_date_operator'][$value[1]];
-        if($value[1] == 'plus' || $value[1] == 'minus'){
-            $field .= ' '.$value[2].' '.$app_list_strings['aor_date_type_list'][$value[3]];
-        }
-    }
-    return $field;
-
-}
-
-function getDateFields($module, $view='EditView',$value = '', $field_option = true)
-{
-    global $beanList, $app_list_strings;
-
-    $fields = $app_list_strings['aor_date_options'];
-
-    if(!$field_option) unset($fields['field']);
-
-    if ($module != '') {
-        if(isset($beanList[$module]) && $beanList[$module]){
-            $mod = new $beanList[$module]();
-            foreach($mod->field_defs as $name => $arr){
-                if(isset($arr['type']) && ($arr['type'] == 'date' || $arr['type'] == 'datetime' || $arr['type'] == 'datetimecombo')){
-                    if(isset($arr['vname']) && $arr['vname'] != ''){
-                        $fields[$name] = translate($arr['vname'],$mod->module_dir);
-                    } else {
-                        $fields[$name] = $name;
-                    }
-                }
-            } //End loop.
-
-        }
-    }
-    if($view == 'EditView'){
-        return get_select_options_with_id($fields, $value);
+    $modulePathDisplay = array();
+    $currentBean = BeanFactory::getBean($reportModule);
+    $modulePathDisplay[] = $currentBean->module_name;
+    if (is_array($modulePath)) {
+        $split = $modulePath;
     } else {
-        return $fields[$value];
+        $split = explode(':', $modulePath);
     }
-}
-
-function getAssignField($aor_field, $view, $value){
-    global $app_list_strings;
-
-    $value = json_decode(html_entity_decode_utf8($value), true);
-
-    $roles = get_bean_select_array(true, 'ACLRole','name', '','name',true);
-
-    if(!file_exists('modules/SecurityGroups/SecurityGroup.php')){
-        unset($app_list_strings['aor_assign_options']['security_group']);
+    if ($split && $split[0] == $currentBean->module_dir) {
+        array_shift($split);
     }
-    else{
-        $securityGroups = get_bean_select_array(true, 'SecurityGroup','name', '','name',true);
-    }
-
-    $field = '';
-
-    if($view == 'EditView'){
-        $field .= "<select type='text' name='$aor_field".'[0]'."' id='$aor_field".'[0]'."' onchange='assign_field_change(\"$aor_field\")' title='' tabindex='116'>". get_select_options_with_id($app_list_strings['aor_assign_options'], $value[0]) ."</select>&nbsp;&nbsp;";
-        if(!file_exists('modules/SecurityGroups/SecurityGroup.php')){
-            $field .= "<input type='hidden' name='$aor_field".'[1]'."' id='$aor_field".'[1]'."' value=''  />";
+    foreach ($split as $relName) {
+        if (empty($relName)) {
+            continue;
         }
-        else {
-            $display = 'none';
-            if($value[0] == 'security_group') $display = '';
-            $field .= "<select type='text' style='display:$display' name='$aor_field".'[1]'."' id='$aor_field".'[1]'."' title='' tabindex='116'>". get_select_options_with_id($securityGroups, $value[1]) ."</select>&nbsp;&nbsp;";
+        if (!empty($currentBean->field_name_map[$relName]['vname'])) {
+            $moduleLabel = trim(translate($currentBean->field_name_map[$relName]['vname'], $currentBean->module_dir), ':');
         }
-        $display = 'none';
-        if($value[0] == 'role' || $value[0] == 'security_group') $display = '';
-        $field .= "<select type='text' style='display:$display' name='$aor_field".'[2]'."' id='$aor_field".'[2]'."' title='' tabindex='116'>". get_select_options_with_id($roles, $value[2]) ."</select>&nbsp;&nbsp;";
-    }
-    else {
-        $field = $app_list_strings['aor_assign_options'][$value[1]];
-    }
-    return $field;
+        $thisModule = getRelatedModule($currentBean->module_dir, $relName);
+        $currentBean = BeanFactory::getBean($thisModule);
 
-}
-
-
-function getLeastBusyUser($users, $field, SugarBean $bean) {
-    $counts = array();
-    foreach($users as $id) {
-        $c = $bean->db->getOne("SELECT count(*) AS c FROM ".$bean->table_name." WHERE $field = '$id' AND deleted = 0");
-        $counts[$id] = $c;
-    }
-    asort($counts);
-    $countsKeys = array_flip($counts);
-    return array_shift($countsKeys);
-}
-
-function getRoundRobinUser($users, $id) {
-
-    $file = create_cache_directory('modules/AOR_Reports/Users/') . $id . 'lastUser.cache.php';
-
-    if(isset($_SESSION['lastuser'][$id]) && $_SESSION['lastuser'][$id] != '') {
-        $users_by_key = array_flip($users); // now keys are values
-        $key = $users_by_key[$_SESSION['lastuser'][$id]] + 1;
-        if(!empty($users[$key])) {
-            return $users[$key];
+        if (!empty($moduleLabel)) {
+            $modulePathDisplay[] = $moduleLabel;
+        } else {
+            $modulePathDisplay[] = $currentBean->module_name;
         }
     }
-    else if (is_file($file)){
-        require_once($file);
-        if(isset($lastUser['User']) && $lastUser['User'] != '') {
-            $users_by_key = array_flip($users); // now keys are values
-            $key = $users_by_key[$lastUser['User']] + 1;
-            if(!empty($users[$key])) {
-                return $users[$key];
-            }
-        }
+    $fieldDisplay = $currentBean->field_name_map[$field]['vname'];
+    $fieldDisplay = translate($fieldDisplay, $currentBean->module_dir);
+    $fieldDisplay = trim($fieldDisplay, ':');
+    foreach($modulePathDisplay as &$module) {
+        $module = isset($app_list_strings['aor_moduleList'][$module]) ? $app_list_strings['aor_moduleList'][$module] : (
+            isset($app_list_strings['moduleList'][$module]) ? $app_list_strings['moduleList'][$module] : $module
+        );
     }
-
-    return $users[0];
+    return array('field' => $fieldDisplay, 'module' => str_replace(' ', '&nbsp;', implode(' : ', $modulePathDisplay)));
 }
 
-function setLastUser($user_id, $id) {
-
-    $_SESSION['lastuser'][$id] = $user_id;
-
-    $file = create_cache_directory('modules/AOR_Reports/Users/') . $id . 'lastUser.cache.php';
-
-    $arrayString = var_export_helper(array('User' => $user_id));
-
-    $content =<<<eoq
-<?php
-	\$lastUser = {$arrayString};
-?>
-eoq;
-
-    if($fh = @sugar_fopen($file, 'w')) {
-        fputs($fh, $content);
-        fclose($fh);
-    }
-    return true;
-}
-
-function getEmailingModules(){
-    require_once('include/SugarEmailAddress/SugarEmailAddress.php');
-    $emailadd = new EmailAddress();
-
-    return $emailadd->get_linked_fields();
-
-}
-
-function fixUpFormatting($module, $field, $value)
+function requestToUserParameters()
 {
-    global $timedate, $beanFiles, $beanList;
-
-    require_once($beanFiles[$beanList[$module]]);
-    $bean = new $beanList[$module];
-
-    static $boolean_false_values = array('off', 'false', '0', 'no');
-
-    switch($bean->field_defs[$field]['type']) {
-        case 'datetime':
-        case 'datetimecombo':
-            if(empty($value)) break;
-            if ($value == 'NULL') {
-                $value = '';
-                break;
+    $params = array();
+    if(isset($_REQUEST['parameter_id']) && $_REQUEST['parameter_id']) {
+        foreach ($_REQUEST['parameter_id'] as $key => $parameterId) {
+            if ($_REQUEST['parameter_type'][$key] === 'Multi') {
+                $_REQUEST['parameter_value'][$key] = encodeMultienumValue(explode(',', $_REQUEST['parameter_value'][$key]));
             }
-            if ( ! preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/',$value) ) {
-                // This appears to be formatted in user date/time
-                $value = $timedate->to_db($value);
-            }
-            break;
-        case 'date':
-            if(empty($value)) break;
-            if ($value == 'NULL') {
-                $value = '';
-                break;
-            }
-            if ( ! preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/',$value) ) {
-                // This date appears to be formatted in the user's format
-                $value = $timedate->to_db_date($value, false);
-            }
-            break;
-        case 'time':
-            if(empty($value)) break;
-            if ($value == 'NULL') {
-                $value = '';
-                break;
-            }
-            if ( preg_match('/(am|pm)/i',$value) ) {
-                // This time appears to be formatted in the user's format
-                $value = $timedate->fromUserTime($value)->format(TimeDate::DB_TIME_FORMAT);
-            }
-            break;
-        case 'double':
-        case 'decimal':
-        case 'currency':
-        case 'float':
-            if ( $value === '' || $value == NULL || $value == 'NULL') {
-                continue;
-            }
-            if ( is_string($value) ) {
-                $value = (float)unformat_number($value);
-            }
-            break;
-        case 'uint':
-        case 'ulong':
-        case 'long':
-        case 'short':
-        case 'tinyint':
-        case 'int':
-            if ( $value === '' || $value == NULL || $value == 'NULL') {
-                continue;
-            }
-            if ( is_string($value) ) {
-                $value = (int)unformat_number($value);
-            }
-            break;
-        case 'bool':
-            if (empty($value)) {
-                $value = false;
-            } else if(true === $value || 1 == $value) {
-                $value = true;
-            } else if(in_array(strval($value), $boolean_false_values)) {
-                $value = false;
-            } else {
-                $value = true;
-            }
-            break;
-        case 'encrypt':
-            $value = $bean->encrpyt_before_save($value);
-            break;
+            $params[$parameterId] = array('id' => $parameterId,
+                'operator' => $_REQUEST['parameter_operator'][$key],
+                'type' => $_REQUEST['parameter_type'][$key],
+                'value' => $_REQUEST['parameter_value'][$key],
+            );
+        }
     }
-    return $value;
+    return $params;
+}
 
+function getConditionsAsParameters($report, $override = array())
+{
+    if (empty($report)) {
+        return array();
+    }
+
+    global $app_list_strings;
+    $conditions = array();
+    foreach ($report->get_linked_beans('aor_conditions', 'AOR_Conditions') as $key => $condition) {
+        if (!$condition->parameter) {
+            continue;
+        }
+
+        $path = unserialize(base64_decode($condition->module_path));
+        $field_module = $report->report_module;
+        if ($path[0] != $report->report_module) {
+            foreach ($path as $rel) {
+                if (empty($rel)) {
+                    continue;
+                }
+                $field_module = getRelatedModule($field_module, $rel);
+            }
+        }
+
+        $additionalConditions = unserialize(base64_decode($condition->value));
+
+
+        $value = isset($override[$condition->id]['value']) ? $override[$condition->id]['value'] : $value = $condition->value;
+
+
+        $field = getModuleField($field_module, $condition->field, "parameter_value[$key]", 'EditView', $value);
+        $disp = getDisplayForField($path, $condition->field, $report->report_module);
+        $conditions[] = array(
+            'id' => $condition->id,
+            'operator' => $condition->operator,
+            'operator_display' => $app_list_strings['aor_operator_list'][$condition->operator],
+            'value_type' => $condition->value_type,
+            'value' => $value,
+            'field_display' => $disp['field'],
+            'module_display' => $disp['module'],
+            'field' => $field,
+            'additionalConditions' => $additionalConditions
+        );
+    }
+    return $conditions;
+}
+
+/**
+ * getPeriodDate
+ * @param $date_time_period_list_selected
+ * @return DateTime
+ */
+function getPeriodDate($date_time_period_list_selected)
+{
+    global $sugar_config;
+    $datetime_period = new DateTime();
+
+    // Setup when year quarters start & end
+    if ($sugar_config['aor']['quarters_begin']) {
+        $q = calculateQuarters($sugar_config['aor']['quarters_begin']);
+    } else {
+        $q = calculateQuarters();
+    }
+
+    if ($date_time_period_list_selected == 'today') {
+        $datetime_period = new DateTime();
+    } else if ($date_time_period_list_selected == 'yesterday') {
+        $datetime_period = $datetime_period->sub(new DateInterval("P1D"));
+    } else if ($date_time_period_list_selected == 'this_week') {
+        $datetime_period = $datetime_period->setTimestamp(strtotime('this week'));
+    } else if ($date_time_period_list_selected == 'last_week') {
+        $datetime_period = $datetime_period->setTimestamp(strtotime('last week'));
+    } else if ($date_time_period_list_selected == 'this_month') {
+        $datetime_period = $datetime_period->setDate($datetime_period->format('Y'), $datetime_period->format('m'), 1);
+    } else if ($date_time_period_list_selected == 'last_month') {
+        $datetime_period = $datetime_period->setDate($datetime_period->format('Y'), $datetime_period->format('m')-1, 1);
+    } else if ($date_time_period_list_selected == 'this_quarter') {
+        $thisMonth = $datetime_period->setDate($datetime_period->format('Y'), $datetime_period->format('m'), 1);
+        if ($thisMonth >= $q[1]['start'] && $thisMonth <= $q[1]['end']) {
+            // quarter 1
+            $datetime_period = $datetime_period->setDate($q[1]['start']->format('Y'), $q[1]['start']->format('m'), $q[1]['start']->format('d'));
+        } else if ($thisMonth >= $q[2]['start'] && $thisMonth <= $q[2]['end']) {
+            // quarter 2
+            $datetime_period = $datetime_period->setDate($q[2]['start']->format('Y'), $q[2]['start']->format('m'), $q[2]['start']->format('d'));
+        } else if ($thisMonth >= $q[3]['start'] && $thisMonth <= $q[3]['end']) {
+            // quarter 3
+            $datetime_period = $datetime_period->setDate($q[3]['start']->format('Y'), $q[3]['start']->format('m'), $q[3]['start']->format('d'));
+        } else if ($thisMonth >= $q[4]['start'] && $thisMonth <= $q[4]['end']) {
+            // quarter 4
+            $datetime_period = $datetime_period->setDate($q[4]['start']->format('Y'), $q[4]['start']->format('m'), $q[4]['start']->format('d'));
+        }
+    } else if ($date_time_period_list_selected == 'last_quarter') {
+        $thisMonth = $datetime_period->setDate($datetime_period->format('Y'), $datetime_period->format('m'), 1);
+        if ($thisMonth >= $q[1]['start'] && $thisMonth <= $q[1]['end']) {
+            // quarter 1 - 3 months
+            $datetime_period = $q[1]['start']->sub(new DateInterval('P3M'));
+        } else if ($thisMonth >= $q[2]['start'] && $thisMonth <= $q[2]['end']) {
+            // quarter 2 - 3 months
+            $q[2]['start']->sub(new DateInterval('P3M'));
+        } else if ($thisMonth >= $q[3]['start'] && $thisMonth <= $q[3]['end']) {
+            // quarter 3 - 3 months
+            $q[3]['start']->sub(new DateInterval('P3M'));
+        } else if ($thisMonth >= $q[4]['start'] && $thisMonth <= $q[4]['end']) {
+            // quarter 4 - 3 months
+            $q[3]['start']->sub(new DateInterval('P3M'));
+        }
+    } else if ($date_time_period_list_selected == 'this_year') {
+        $datetime_period = $datetime_period = $datetime_period->setDate($datetime_period->format('Y'), 1, 1);
+    } else if ($date_time_period_list_selected == 'last_year') {
+        $datetime_period = $datetime_period = $datetime_period->setDate($datetime_period->format('Y') - 1, 1, 1);
+    }
+    // set time to 00:00:00
+    $datetime_period = $datetime_period->setTime(0, 0, 0);
+    return $datetime_period;
+}
+
+/**
+ * @param int $offsetMonths - defines start of the year.
+ * @return array - The each quarters boundary
+ */
+function calculateQuarters($offsetMonths = 0)
+{
+    // define quarters
+    $q = array();
+    $q['1'] = array();
+    $q['2'] = array();
+    $q['3'] = array();
+    $q['4'] = array();
+
+    // Get the start of this year
+    $q1start = new DateTime();
+    $q1start = $q1start->setTime(0, 0, 0);
+    $q1start = $q1start->setDate($q1start->format('Y'), 1, 1);
+    /*
+     * $offsetMonths gets added to the current month. Therefor we need this variable to equal one less than the start
+     * month. So Jan becomes 0. Feb => 1 and so on.
+     */
+    $offsetMonths -= 1;
+    // Offset months
+    if ($offsetMonths > 0) {
+        $q1start->add(new DateInterval('P' . $offsetMonths . 'M'));
+    }
+    $q1end = DateTime::createFromFormat(DATE_ISO8601, $q1start->format(DATE_ISO8601));
+    $q1end->add(new DateInterval('P2M'));
+
+    $q2start = DateTime::createFromFormat(DATE_ISO8601, $q1start->format(DATE_ISO8601));
+    $q2start->add(new DateInterval('P3M'));
+    $q2end = DateTime::createFromFormat(DATE_ISO8601, $q2start->format(DATE_ISO8601));
+    $q2end->add(new DateInterval('P2M'));
+
+    $q3start = DateTime::createFromFormat(DATE_ISO8601, $q2start->format(DATE_ISO8601));
+    $q3start->add(new DateInterval('P3M'));
+    $q3end = DateTime::createFromFormat(DATE_ISO8601, $q3start->format(DATE_ISO8601));
+    $q3end->add(new DateInterval('P2M'));
+
+    $q4start = DateTime::createFromFormat(DATE_ISO8601, $q3start->format(DATE_ISO8601));
+    $q4start->add(new DateInterval('P3M'));
+    $q4end = DateTime::createFromFormat(DATE_ISO8601, $q4start->format(DATE_ISO8601));
+    $q4end->add(new DateInterval('P2M'));
+
+    // Assign quarter boundaries
+    $q['1']['start'] = $q1start;
+    $q['1']['end'] = $q1end;
+    $q['2']['start'] = $q2start;
+    $q['2']['end'] = $q2end;
+    $q['3']['start'] = $q3start;
+    $q['3']['end'] = $q3end;
+    $q['4']['start'] = $q4start;
+    $q['4']['end'] = $q4end;
+
+    return $q;
 }
